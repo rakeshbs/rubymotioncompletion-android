@@ -1,58 +1,46 @@
 require_relative '../parser'
 require 'nokogiri'
-require_relative 'android_completions'
+require_relative 'android_symbols_dict'
 
 class AndroidMethodParser < Parser
   def parse(node)
-    method_name = node.attributes['selector'].value
-    return_value = nil
-    argument_names = []
-    argument_types = []
-    node.children.each do |child|
-      if child.name == "arg"
-        argument_type = child.attributes["declared_type"].value
-        argument_index = child.attributes["index"].value
-        argument_name = child.attributes["name"].value
+    class_name = node.parent.attributes['name'].value
+    method_name = node.attributes['name'].value
+    type_attribute = node.attributes['type'].value
+    return unless type_attribute =~ /\((.*)\)(.*)/
+    method_types = $1.split(';')
+    return_type = identify_type($2)[0].strip
+    return_type = return_type[0..-2] if return_type[-1] == ';'
 
-        index = argument_index.to_i
-        argument_names[index] = argument_name
-        argument_types[index] = argument_type
+    method_parameters = []
 
-      elsif child.name == "retval"
-        return_value = child.attributes["declared_type"].value
-      end
-    end
-    method_split = method_name.split(":")
-
-    completion = get_completion_with_separator(method_split,argument_types.length) do |i|
-      "<%>"
+    method_types.each do |library_string|
+      type = identify_type(library_string)
+      method_parameters << type unless type.nil?
     end
 
-    abbreviation = get_completion_with_separator(method_split,argument_types.length) do |i|
-      argument_types[i]
-    end
+    method_parameters << return_type
+    method_parameters << method_name
 
-    snippet = Snippet.new() do |s|
-      s.completion = completion
-      s.abbreviation = abbreviation
-      s.type = "m"
-      s.hint = "returns #{return_value}"
-      s.signature = method_name
-    end
+    p method_parameters
 
-    AndroidCompletions.instance.add_omni_snippet(snippet)
+    #puts method_parameters.join(";")
   end
 
-  def get_completion_with_separator(method_split,argument_count,&block)
-    completion = method_split[0]
-    if (argument_count > 0)
-      completion += "("+block.call(0)
-      1.upto(argument_count-1) do |i|
-        completion += ", #{method_split[i]}:"+block.call(i)
+  def identify_type(type_string)
+    return [] if type_string == nil
+    return [] if type_string.strip.chomp == ''
+    if type_string[0] == 'L'
+      return [type_string.split('/')[-1]]
+    else
+      if type_string[0] == '['
+        return identify_type(type_string[1..-1])[-1] + "[]"
+      else
+        p type_string
+        return identify_type(type_string[1..-1]) << @android_types[type_string[0]]
       end
-      completion += ")"
     end
-    completion
+    []
   end
 
   def can_parse?(node)

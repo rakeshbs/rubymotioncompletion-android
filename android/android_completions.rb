@@ -2,7 +2,6 @@ require 'singleton'
 require_relative '../snippet'
 require_relative 'android_bridgesupport_reader'
 
-
 class AndroidCompletions
   include Singleton
 
@@ -53,4 +52,5 @@ class AndroidCompletions
     @omni_snippets ||= []
     @keyword_snippets ||= []
   end
+
 end
