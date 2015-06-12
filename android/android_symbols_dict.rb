@@ -1,4 +1,4 @@
-@android_types = {
+@@android_types = {
   "L" => "Library",
 
   "I" => "Int",

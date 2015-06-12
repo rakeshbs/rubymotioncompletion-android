@@ -3,10 +3,12 @@ require 'nokogiri'
 require_relative 'android_symbols_dict'
 
 class AndroidMethodParser < Parser
+
   def parse(node)
     class_name = node.parent.attributes['name'].value
     method_name = node.attributes['name'].value
     type_attribute = node.attributes['type'].value
+
     return unless type_attribute =~ /\((.*)\)(.*)/
     method_types = $1.split(';')
     return_type = identify_type($2)[0].strip
@@ -36,8 +38,8 @@ class AndroidMethodParser < Parser
       if type_string[0] == '['
         return identify_type(type_string[1..-1])[-1] + "[]"
       else
-        p type_string
-        return identify_type(type_string[1..-1]) << @android_types[type_string[0]]
+        p @@android_types
+        return identify_type(type_string[1..-1]) << @@android_types[type_string[0]]
       end
     end
     []
