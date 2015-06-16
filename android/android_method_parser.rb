@@ -5,9 +5,10 @@ require_relative 'android_symbols_dict'
 class AndroidMethodParser < Parser
 
   def parse(node)
-    class_name = node.parent.attributes['name'].value
+    class_name = node.parent.attributes['name'].value.gsub("/","::").gsub("$",".")
     method_name = node.attributes['name'].value
     type_attribute = node.attributes['type'].value
+    is_class_method = node.attributes['class_method'].value if node.attributes['class_method'] != nil
 
     return unless type_attribute =~ /\((.*)\)(.*)/
     method_types = $1.split(';')
@@ -24,7 +25,19 @@ class AndroidMethodParser < Parser
     method_parameters << return_type
     method_parameters << method_name
 
-    p method_parameters
+    if is_class_method
+    else
+      snippet = Snippet.new do |s|
+        s.completion = method_name + '('
+        s.abbreviation = method_name + '('
+        s.type = "m"
+        s.hint = method_parameters.to_s
+        s.signature = method_name
+      end
+      p snippet
+      AndroidCompletions.instance.add_omni_snippet(snippet)
+    end
+
 
     #puts method_parameters.join(";")
   end
@@ -38,7 +51,6 @@ class AndroidMethodParser < Parser
       if type_string[0] == '['
         return identify_type(type_string[1..-1])[-1] + "[]"
       else
-        p @@android_types
         return identify_type(type_string[1..-1]) << @@android_types[type_string[0]]
       end
     end

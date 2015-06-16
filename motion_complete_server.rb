@@ -25,7 +25,7 @@ loop {
     next
   end
   snippets = eval('instance.'+completion_type+'_snippets')
-  completion_string = Snippet.serialize_abbreviation_with_prefix(snippets,prefix)
+  completion_string = Snippet.serialize_snippets_with_prefix(snippets,prefix)
   client.puts completion_string
   client.close
 }

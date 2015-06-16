@@ -5,7 +5,7 @@ require_relative 'android_bridgesupport_reader'
 class AndroidCompletions
   include Singleton
 
-  attr_accessor :omni_snippets, :keyword_snippets
+  attr_accessor :omni_snippets, :keyword_snippets, :class_method_snippets
 
   def add_keyword_snippet(snippet)
     unless @keyword_snippets.include?(snippet)
@@ -19,19 +19,29 @@ class AndroidCompletions
     end
   end
 
+  def add_omni_snippet(snippet)
+    unless @class_method_snippets.include?(snippet)
+      class_method_snippets << snippet
+    end
+  end
+
   def create_snippet_from_bridgesupport(version=nil)
     read_android_bridgesupport(version)
   end
 
   def save_snippets
-    keywords = Snippet.serialize_abbreviation_with_prefix(keyword_snippets,"")
-    omni = Snippet.serialize_abbreviation_with_prefix(omni_snippets,"")
+    keywords = Snippet.serialize_snippets_with_prefix(keyword_snippets,"")
+    omni = Snippet.serialize_snippets_with_prefix(omni_snippets,"")
 
     File.open('android_keyword.snippets','w') do |f|
       f.write keywords
     end
 
     File.open('android_omni.snippets','w') do |f|
+      f.write omni
+    end
+
+    File.open('android_class_method.snippets','w') do |f|
       f.write omni
     end
   end
@@ -46,11 +56,16 @@ class AndroidCompletions
       omnis = f.read
       @omni_snippets = Snippet.deserialize_snippets(omnis)
     end
+
+    File.open('android_class_method.snippets','r') do |f|
+      class_methods = f.read
+      @class_method_snippets = Snippet.deserialize_snippets(class_methods)
+    end
   end
 
   def initialize
     @omni_snippets ||= []
     @keyword_snippets ||= []
+    @class_method_snippets ||= []
   end
-
 end
