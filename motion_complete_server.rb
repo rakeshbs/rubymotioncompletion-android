@@ -7,8 +7,8 @@ require_relative 'snippet'
 
 
 instance = AndroidCompletions.instance
-class_heirarchy = instance.class_heirarchy
 instance.read_snippets
+class_heirarchy = instance.class_heirarchy
 puts "Started"
 
 server = TCPServer.open(2000)
@@ -30,22 +30,25 @@ loop do
     next
   end
 
+  completion_string = ""
   if completion_type == "namespace"
     completion_type = "keyword"
     prefix = complete_sequence + "::" + prefix
   elsif completion_type == "omni"
     snippets = eval('instance.'+completion_type+'_snippets')
     current_ancestor = complete_sequence
-    while  completion_string.nil? || completion_string.gsub("|","") == "" do
-      completion_string = Snippet.serialize_snippets_with_prefix(snippets,current_ancestor + "." + prefix)
+    loop do
+      completion_string += Snippet.serialize_snippets_with_prefix(snippets,current_ancestor + "." + prefix)
       break if class_heirarchy[current_ancestor].nil?
       current_ancestor = class_heirarchy[current_ancestor]
+      p current_ancestor
     end
-    current_reciever = receiver
-    while  completion_string.nil? || completion_string.gsub("|","") == "" do
-      completion_string = Snippet.serialize_snippets_with_prefix(snippets,current_reciever + "." + prefix)
-      break if class_heirarchy[current_reciever].nil?
-      current_reciever = class_heirarchy[current_ancestor]
+    current_receiver = receiver
+    loop do
+      completion_string += Snippet.serialize_snippets_with_prefix(snippets,current_receiver + "." + prefix)
+      break if class_heirarchy[current_receiver].nil?
+      current_receiver = class_heirarchy[current_receiver]
+      p current_receiver
     end
   end
 

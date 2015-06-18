@@ -9,7 +9,7 @@ class AndroidClassParser < Parser
   end
 
   def can_parse?(node)
-    node.name == 'class'
+    node.name == 'class' || node.name == "interface"
   end
 
   def parse(node)

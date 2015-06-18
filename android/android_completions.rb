@@ -58,7 +58,7 @@ class AndroidCompletions
       @omni_snippets = Snippet.deserialize_snippets(omnis)
     end
 
-    File.exists?('android_class_heirarchy.yml') do
+    if File.exists?('android_class_heirarchy.yml')
       @class_heirarchy = YAML::load_file "android_class_heirarchy.yml"
     end
 
