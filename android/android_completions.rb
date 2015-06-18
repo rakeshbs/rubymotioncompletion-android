@@ -1,11 +1,12 @@
 require 'singleton'
+require 'yaml'
 require_relative '../snippet'
 require_relative 'android_bridgesupport_reader'
 
 class AndroidCompletions
   include Singleton
 
-  attr_accessor :omni_snippets, :keyword_snippets, :class_method_snippets
+  attr_accessor :omni_snippets, :keyword_snippets, :class_heirarchy
 
   def add_keyword_snippet(snippet)
     unless @keyword_snippets.include?(snippet)
@@ -17,6 +18,10 @@ class AndroidCompletions
     unless @omni_snippets.include?(snippet)
       omni_snippets << snippet
     end
+  end
+
+  def add_class_and_super_class(class_name,super_class)
+    @class_heirarchy[class_name] = super_class
   end
 
 
@@ -36,6 +41,10 @@ class AndroidCompletions
       f.write omni
     end
 
+    File.open("android_class_heirarchy.yml", "w") do |file|
+      file.write @class_heirarchy.to_yaml
+    end
+
   end
 
   def read_snippets
@@ -49,11 +58,15 @@ class AndroidCompletions
       @omni_snippets = Snippet.deserialize_snippets(omnis)
     end
 
+    File.exists?('android_class_heirarchy.yml') do
+      @class_heirarchy = YAML::load_file "android_class_heirarchy.yml"
+    end
+
   end
 
   def initialize
     @omni_snippets ||= []
     @keyword_snippets ||= []
-    @class_method_snippets ||= []
+    @class_heirarchy ||= {}
   end
 end

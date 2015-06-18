@@ -14,6 +14,7 @@ class AndroidClassParser < Parser
 
   def parse(node)
     class_name = node.attributes['name'].value
+    super_class = node.attributes['super'].value unless node.attributes['super'].nil?
     namespaces = class_name.split(/[$\/]/)
     prefix = ""
     namespaces.each.with_index do |namespace,index|
@@ -29,8 +30,18 @@ class AndroidClassParser < Parser
       prefix += "::"
     end
 
+    unless super_class.nil?
+      AndroidCompletions.instance.add_class_and_super_class(format_namespaces(class_name),
+                                                            format_namespaces(super_class))
+    end
+
     node.children.each do |child|
       parse_using_children child
     end
+  end
+
+  def format_namespaces(class_name)
+    namespaces = class_name.split(/[$\/]/)
+    namespaces.map { |namespace| namespace[0].upcase + namespace[1..-1]}.join("::")
   end
 end
