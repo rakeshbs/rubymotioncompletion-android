@@ -24,6 +24,10 @@ class AndroidMethodParser < Parser
     end
 
     method_parameters.flatten!
+
+    create_getter_snippet(class_name, method_name, method_parameters.to_s)
+    create_setter_snippet(class_name, method_name, method_parameters.to_s)
+
     full_method_name = method_name
     if is_class_method
       full_method_name = "#{class_name}.#{method_name}"
@@ -78,6 +82,35 @@ class AndroidMethodParser < Parser
       end
     end
     []
+  end
+
+  def create_setter_snippet(class_name,method_name,parameters)
+   unless method_name =~ /^set(.+)$/
+     return
+   end
+   setter_name = $1[0].downcase + $1[1..-1] + " = "
+   create_accessor(setter_name, "#{class_name}.#{setter_name}", "s", parameters)
+   create_accessor(setter_name, setter_name, "s", parameters)
+  end
+
+  def create_getter_snippet(class_name,method_name,parameters)
+   unless method_name =~ /^get(.+)$/
+     return
+   end
+   getter_name = $1[0].downcase + $1[1..-1]
+   create_accessor(getter_name, "#{class_name}.#{getter_name}", "s", parameters)
+   create_accessor(getter_name, getter_name, "s", parameters)
+  end
+
+  def create_accessor(method_name,signature,type,parameters)
+    Snippet.new do |s|
+      s.signature = signature
+      s.abbreviation = method_name
+      s.completion = method_name
+      s.type = type
+      s.hint = parameters
+      AndroidCompletions.instance.add_omni_snippet(s)
+    end
   end
 
   def can_parse?(node)
