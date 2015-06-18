@@ -11,12 +11,16 @@ class Snippet
     yield self if block_given?
   end
 
+  def count_double_colons(str)
+    str.gsub("::","/").count("/")
+  end
+
   def completion_start_with?(prefix)
-    @abbreviation.start_with?(prefix)
+    @signature.start_with?(prefix) && count_double_colons(@signature) == count_double_colons(prefix)
   end
 
   def case_insensitive_completion_start_with?(prefix)
-    @abbreviation.downcase.start_with?(prefix.downcase)
+    @signature.downcase.start_with?(prefix.downcase) && count_double_colons(@signature) == count_double_colons(prefix)
   end
 
   def serialize

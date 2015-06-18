@@ -6,6 +6,7 @@ class AndroidMethodParser < Parser
 
   def parse(node)
     class_name = node.parent.attributes['name'].value.gsub("/","::").gsub("$",".")
+    class_name = class_name.split("::").map{ |x| x[0].upcase + x[1..-1] }.join("::")
     method_name = node.attributes['name'].value
     type_attribute = node.attributes['type'].value
     is_class_method = node.attributes['class_method'].value if node.attributes['class_method'] != nil
@@ -22,24 +23,46 @@ class AndroidMethodParser < Parser
       method_parameters << type unless type.nil?
     end
 
-    method_parameters << return_type
-    method_parameters << method_name
-
+    method_parameters.flatten!
+    full_method_name = method_name
     if is_class_method
+      full_method_name = "#{class_name}.#{method_name}"
+    elsif method_name == "<init>"
+      method_name = "new"
+      full_method_name = "#{class_name}.new"
     else
-      snippet = Snippet.new do |s|
-        s.completion = method_name + '('
-        s.abbreviation = method_name + '('
-        s.type = "m"
-        s.hint = method_parameters.to_s
-        s.signature = method_name
-      end
-      p snippet
+      snippet = create_snippet("#{class_name}.#{method_name}",method_name, method_parameters)
       AndroidCompletions.instance.add_omni_snippet(snippet)
     end
+    snippet = create_snippet(full_method_name,method_name, method_parameters)
+    AndroidCompletions.instance.add_omni_snippet(snippet)
+  end
 
 
-    #puts method_parameters.join(";")
+  def create_snippet(full_method_name,method_name,method_parameters)
+      Snippet.new do |s|
+        s.signature = format_method_parameters(full_method_name,method_parameters) do |parameter|
+          "#{parameter}"
+        end
+        s.completion = format_method_parameters(method_name,method_parameters) do |parameter|
+          "<% #{parameter} >"
+        end
+
+        s.abbreviation = format_method_parameters(method_name,method_parameters) do |parameter|
+          "#{parameter}"
+        end
+        s.type = "m"
+        s.hint = method_parameters.to_s
+      end
+  end
+
+  def format_method_parameters(method_name,parameters)
+    return_string = method_name + "("
+    return_string += parameters.reduce("") do |concat,parameter|
+      concat += yield(parameter) + ","
+    end
+    return_string = return_string[0..-2] if parameters.length > 0
+    return return_string + ")"
   end
 
   def identify_type(type_string)

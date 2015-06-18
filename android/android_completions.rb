@@ -19,11 +19,6 @@ class AndroidCompletions
     end
   end
 
-  def add_omni_snippet(snippet)
-    unless @class_method_snippets.include?(snippet)
-      class_method_snippets << snippet
-    end
-  end
 
   def create_snippet_from_bridgesupport(version=nil)
     read_android_bridgesupport(version)
@@ -41,9 +36,6 @@ class AndroidCompletions
       f.write omni
     end
 
-    File.open('android_class_method.snippets','w') do |f|
-      f.write omni
-    end
   end
 
   def read_snippets
@@ -57,10 +49,6 @@ class AndroidCompletions
       @omni_snippets = Snippet.deserialize_snippets(omnis)
     end
 
-    File.open('android_class_method.snippets','r') do |f|
-      class_methods = f.read
-      @class_method_snippets = Snippet.deserialize_snippets(class_methods)
-    end
   end
 
   def initialize

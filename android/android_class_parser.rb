@@ -14,32 +14,19 @@ class AndroidClassParser < Parser
 
   def parse(node)
     class_name = node.attributes['name'].value
-    snippet = Snippet.new do |s|
-      s.completion = class_name.gsub("/","::").gsub("$",".")
-      s.abbreviation = s.completion.split(/::|\./)[-1]
-      s.type = s.completion
-      s.hint = ''
-      s.signature = s.completion
-    end
-    AndroidCompletions.instance.add_keyword_snippet(snippet)
-
     namespaces = class_name.split(/[$\/]/)
     prefix = ""
     namespaces.each.with_index do |namespace,index|
-      prefix += namespace
+      prefix += namespace[0].upcase + namespace[1..-1]
       snippet = Snippet.new do |s|
-        s.completion = namespace
+        s.completion = namespace.capitalize
         s.abbreviation = prefix
         s.type = 'c'
         s.hint = ''
-        s.signature = s.completion
+        s.signature = s.abbreviation
       end
       AndroidCompletions.instance.add_keyword_snippet(snippet)
-      #if (index == namespaces.size - 2)
-      #prefix += "."
-      #else
       prefix += "::"
-      #end
     end
 
     node.children.each do |child|
