@@ -30,8 +30,12 @@ class AndroidCompletions
   end
 
   def save_snippets
+    omni_snippets.sort()
+    keyword_snippets.sort()
+
     keywords = Snippet.serialize_snippets_with_prefix(keyword_snippets,"")
     omni = Snippet.serialize_snippets_with_prefix(omni_snippets,"")
+
 
     File.open('android_keyword.snippets','w') do |f|
       f.write keywords
