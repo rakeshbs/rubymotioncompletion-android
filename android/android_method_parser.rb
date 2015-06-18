@@ -5,7 +5,7 @@ require_relative 'android_symbols_dict'
 class AndroidMethodParser < Parser
 
   def parse(node)
-    class_name = node.parent.attributes['name'].value.gsub("/","::").gsub("$",".")
+    class_name = node.parent.attributes['name'].value.gsub("/","::").gsub("$","::")
     class_name = class_name.split("::").map{ |x| x[0].upcase + x[1..-1] }.join("::")
     method_name = node.attributes['name'].value
     type_attribute = node.attributes['type'].value

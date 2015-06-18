@@ -19,7 +19,7 @@ class AndroidClassParser < Parser
     namespaces.each.with_index do |namespace,index|
       prefix += namespace[0].upcase + namespace[1..-1]
       snippet = Snippet.new do |s|
-        s.completion = namespace.capitalize
+        s.completion = namespace[0].upcase + namespace[1..-1]
         s.abbreviation = prefix
         s.type = 'c'
         s.hint = ''
