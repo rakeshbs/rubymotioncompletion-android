@@ -19,7 +19,7 @@ class AndroidMethodParser < Parser
     method_parameters = []
 
     method_types.each do |library_string|
-      type = identify_type(library_string)
+      type = identify_type(library_string).reverse
       method_parameters << type unless type.nil?
     end
 
