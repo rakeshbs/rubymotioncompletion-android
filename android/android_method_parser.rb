@@ -63,9 +63,9 @@ class AndroidMethodParser < Parser
   def format_method_parameters(method_name,parameters)
     return_string = method_name + "("
     return_string += parameters.reduce("") do |concat,parameter|
-      concat += yield(parameter) + ","
+      concat += yield(parameter) + ", "
     end
-    return_string = return_string[0..-2] if parameters.length > 0
+    return_string = return_string[0..-3] if parameters.length > 0
     return return_string + ")"
   end
 
