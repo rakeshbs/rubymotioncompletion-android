@@ -5,7 +5,9 @@ hostname = '127.0.0.1'
 port = 2000
 server = TCPSocket.open(hostname, port)
 server.puts ARGV[0]
-server.puts "keyword"
+server.puts "omni"
+server.puts ""
+server.puts ""
 server.puts "<<EOF>>"
 completions = server.gets
 snippets = Snippet.deserialize_snippets(completions)

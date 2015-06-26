@@ -13,7 +13,8 @@ class AndroidMethodParser < Parser
 
     return unless type_attribute =~ /\((.*)\)(.*)/
     method_types = $1.split(';')
-    return_type = identify_type($2)[0].strip
+    return_type = identify_type($2)[0]
+    p $2 if return_type.nil?
     return_type = return_type[0..-2] if return_type[-1] == ';'
 
     method_parameters = []
@@ -29,9 +30,7 @@ class AndroidMethodParser < Parser
     create_setter_snippet(class_name, method_name, method_parameters.to_s)
 
     full_method_name = method_name
-    if is_class_method
-      full_method_name = "#{class_name}.#{method_name}"
-    elsif method_name == "<init>"
+    if method_name == "<init>"
       method_name = "new"
       full_method_name = "#{class_name}.new"
     else
@@ -61,6 +60,9 @@ class AndroidMethodParser < Parser
   end
 
   def format_method_parameters(method_name,parameters)
+    if parameters.nil? || parameters.length == 0
+      return method_name
+    end
     return_string = method_name + "("
     return_string += parameters.reduce("") do |concat,parameter|
       concat += yield(parameter) + ", "
@@ -76,7 +78,9 @@ class AndroidMethodParser < Parser
       return [type_string.split('/')[-1]]
     else
       if type_string[0] == '['
-        return identify_type(type_string[1..-1])[-1] + "[]"
+        types = identify_type(type_string[1..-1])
+        types[-1] += '[]'
+        return types
       else
         return identify_type(type_string[1..-1]) << @@android_types[type_string[0]]
       end
